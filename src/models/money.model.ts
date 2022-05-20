@@ -9,6 +9,7 @@ const moneySchema: Schema = new Schema({
     twenty: { type: Number, required: true, default: 0 },
     fifty: { type: Number, required: true, default: 0 },
     hundred: { type: Number, required: true, default: 0 },
+    fivehundred : { type: Number, required: true, default: 0 },
     thousand: { type: Number, required: true, default: 0 },
   },
 });
