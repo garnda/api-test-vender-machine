@@ -3,15 +3,11 @@
 
 ###
 # Find All Users
-GET {{ baseURL }}/users
-
-###
-# Find User By Id
-GET {{ baseURL }}/users/1
+GET {{ baseURL }}/products
 
 ###
 # Create User
-POST {{ baseURL }}/users
+POST {{ baseURL }}/products
 Content-Type: application/json
 
 {
@@ -21,14 +17,13 @@ Content-Type: application/json
 
 ###
 # Modify User By Id
-PUT {{ baseURL }}/users/1
+PUT {{ baseURL }}/products/
 Content-Type: application/json
 
 {
-    "email": "example@email.com",
-    "password": "password"
+    "productId": "88888",
+    "price": "30"
 }
 
 ###
-# Delete User By Id
-DELETE {{ baseURL }}/users/1
+
