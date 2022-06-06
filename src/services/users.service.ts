@@ -4,7 +4,9 @@ import { HttpException } from '@exceptions/HttpException';
 import { User } from '@interfaces/users.interface';
 import userModel from '@models/users.model';
 import { isEmpty } from '@utils/util';
-
+const request = require('request');
+const lineNotifyUrl = 'https://notify-api.line.me/api/notify';
+const token = 'Is6zOrchVpFyXK257JlmOrtXO4MrRZW7y4FanIFRakG';
 class UserService {
   public users = userModel;
 
@@ -24,14 +26,46 @@ class UserService {
 
   public async createUser(userData: CreateUserDto): Promise<User> {
     if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+    const user: User = new userModel(userData);
+    const duplicate: User[] = await this.users.find({
+      $or: [{ email: userData.email }, { username: userData.username }, { phoneNumber: userData.phoneNumber }],
+    });
 
-    const findUser: User = await this.users.findOne({ email: userData.email });
-    if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
+    let duplicateKey = '';
+    duplicate.forEach((v: User) => {
+      if (userData.username === v.username) duplicateKey += 'username-';
+      if (userData.phoneNumber === v.phoneNumber) duplicateKey += 'displayName-';
+      if (userData.email === v.email) duplicateKey += 'email-';
+    });
 
-    const hashedPassword = await hash(userData.password, 10);
-    const createUserData: User = await this.users.create({ ...userData, password: hashedPassword });
-
-    return createUserData;
+    if (duplicateKey) throw new HttpException(409, `You're ${duplicateKey} already exists`);
+    else {
+      const hashedPassword = await hash(userData.password, 10);
+      const createUserData: User = await this.users.create({ ...userData, password: hashedPassword });
+      return createUserData;
+      request(
+        {
+          method: 'POST',
+          uri: lineNotifyUrl,
+          header: {
+            'Content-Type': 'multipart/form-data',
+          },
+          auth: {
+            bearer: token,
+          },
+          form: {
+            message: `🚨🚨🚨‼️\n👤 ${userData.firstName} ${userData.lastName}\n🪧 \n👤 ${userData.email} ${userData.username}\n🪧`,
+          },
+        },
+        (err, httpResponse, body) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log(body);
+          }
+        },
+      );
+    }
   }
 
   public async updateUser(userId: string, userData: CreateUserDto): Promise<User> {
